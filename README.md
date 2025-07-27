@@ -22,7 +22,7 @@ I'm a passionate FullStack Developer working in Web development. I enjoy turning
 ### **1. Clone the Repository**
 ```bash
 git clone https://github.com/mohmmedwee/Crawler-lane.git
-cd Crawler-lane/crawler
+cd Crawler-lane
 ```
 
 ### **2. Set Up Virtual Environment**
@@ -80,28 +80,30 @@ python api.py
 
 ```
 Crawler-lane/
-├── crawler/                    # Main application directory
-│   ├── templates/              # HTML templates
-│   │   ├── index.html         # Main interface
-│   │   └── dashboard.html     # Dashboard
-│   ├── static/                # Static assets
-│   │   ├── css/
-│   │   │   ├── style.css      # Main styles
-│   │   │   └── dashboard.css  # Dashboard styles
-│   │   └── js/
-│   │       ├── script.js      # Main JavaScript
-│   │       └── dashboard.js   # Dashboard JavaScript
-│   ├── examples/              # Sample data and outputs
-│   ├── demos/                 # Demo scripts
-│   ├── api.py                 # Flask web server
-│   ├── crawler.py             # Basic web crawler
-│   ├── advanced_crawler.py    # Advanced Selenium crawler
-│   ├── smart_filter.py        # AI content filtering
-│   ├── visualization_dashboard.py  # Data visualization
-│   ├── requirements.txt       # Python dependencies
-│   └── README.md              # Detailed documentation
-├── LICENSE                    # MIT License
-└── .gitignore                # Git ignore rules
+├── README.md                    # Project documentation
+├── LICENSE                      # MIT License
+├── .gitignore                   # Git ignore rules
+├── requirements.txt             # Python dependencies
+├── setup.py                     # Package setup
+├── __init__.py                  # Package initialization
+├── api.py                       # Flask web server
+├── crawler.py                   # Basic web crawler
+├── advanced_crawler.py          # Advanced Selenium crawler
+├── smart_filter.py              # AI content filtering
+├── visualization_dashboard.py   # Data visualization
+├── templates/                   # HTML templates
+│   ├── index.html              # Main interface
+│   └── dashboard.html          # Dashboard
+├── static/                      # Static assets
+│   ├── css/
+│   │   ├── style.css           # Main styles
+│   │   └── dashboard.css       # Dashboard styles
+│   └── js/
+│       ├── script.js           # Main JavaScript
+│       └── dashboard.js        # Dashboard JavaScript
+├── examples/                    # Sample data and outputs
+├── demos/                       # Demo scripts
+└── venv/                        # Virtual environment (local)
 ```
 
 ---
@@ -184,7 +186,7 @@ response = requests.post('http://localhost:8080/smart-filter-crawl', json={
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/mohmmedwee/Crawler-lane.git
-   cd Crawler-lane/crawler
+   cd Crawler-lane
    ```
 
 2. **Create Virtual Environment**

@@ -37,7 +37,7 @@ setup(
         "Documentation": "https://github.com/mohmmedwee/Crawler-lane#readme",
         "Source Code": "https://github.com/mohmmedwee/Crawler-lane",
     },
-    packages=find_packages(include=['crawler*']),
+    packages=find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -68,13 +68,13 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "crawler-lane=crawler.start:main",
-            "crawler-lane-api=crawler.api:app",
+            "crawler-lane=start:main",
+            "crawler-lane-api=api:app",
         ],
     },
     include_package_data=True,
     package_data={
-        "crawler": [
+        "": [
             "templates/*.html",
             "static/css/*.css",
             "static/js/*.js",
