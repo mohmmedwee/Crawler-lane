@@ -315,6 +315,11 @@ class AdvancedWebCrawler:
                     if normalized_url and normalized_url not in self.crawled_urls and normalized_url not in new_links:
                         new_links.append(normalized_url)
         
+        # Perform content analysis
+        content_type = self.smart_filter.detect_content_type(url, title_text, all_text, text_data.get('meta_data', {}))
+        quality_level, quality_score = self.smart_filter.assess_content_quality(all_text, text_data)
+        language = self.smart_filter.detect_language(all_text)
+        
         return {
             'url': url,
             'success': True,
@@ -324,7 +329,13 @@ class AdvancedWebCrawler:
             'detailed_text': text_data,
             'new_links': new_links,
             'status_code': response.status_code,
-            'method': 'requests'
+            'method': 'requests',
+            'content_analysis': {
+                'content_type': content_type.value,
+                'quality_score': quality_score,
+                'quality_level': quality_level.value,
+                'language': language
+            }
         }
     
     def _crawl_with_selenium(self, url: str) -> Dict[str, Any]:
@@ -365,6 +376,11 @@ class AdvancedWebCrawler:
                 if normalized_url and normalized_url not in self.crawled_urls:
                     new_links.append(normalized_url)
             
+            # Perform content analysis
+            content_type = self.smart_filter.detect_content_type(url, title_text, all_text, text_data.get('meta_data', {}))
+            quality_level, quality_score = self.smart_filter.assess_content_quality(all_text, text_data)
+            language = self.smart_filter.detect_language(all_text)
+            
             return {
                 'url': url,
                 'success': True,
@@ -373,7 +389,13 @@ class AdvancedWebCrawler:
                 'text_content': all_text[:5000],  # First 5000 chars
                 'detailed_text': text_data,
                 'new_links': new_links,
-                'method': 'selenium'
+                'method': 'selenium',
+                'content_analysis': {
+                    'content_type': content_type.value,
+                    'quality_score': quality_score,
+                    'quality_level': quality_level.value,
+                    'language': language
+                }
             }
             
         except Exception as e:
