@@ -34,7 +34,7 @@ def crawl_website():
             return jsonify({'success': False, 'error': 'URL is required'}), 400
         
         # Use basic crawler
-        result = crawler.crawl_website(url, max_pages=max_pages)
+        result = crawler.crawl_website(url, use_selenium=False)
         
         if result.get('success'):
             # Calculate additional metrics
@@ -110,11 +110,18 @@ def smart_filter_crawl_website():
         content_filter = ContentFilter(
             min_quality_score=min_quality,
             content_types=content_types,
-            languages=languages
+            language=languages[0] if languages else None
         )
         
-        # Use smart filter crawler
-        result = smart_filter.crawl_and_filter(url, content_filter, max_pages=max_pages)
+        # Initialize advanced crawler
+        global advanced_crawler
+        advanced_crawler = AdvancedWebCrawler(
+            max_pages=max_pages,
+            delay=1
+        )
+        
+        # Use advanced crawler with smart filtering
+        result = advanced_crawler.crawl_website(url, use_selenium=False, filter_config=content_filter)
         
         if result.get('success'):
             # Calculate additional metrics
