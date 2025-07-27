@@ -3,170 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Web Crawler</title>
+    <title>Crawler Lane - Advanced Web Crawler</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🤖 Advanced Web Crawler</h1>
-            <p>AI-Powered Text Extraction and Content Analysis</p>
-        </div>
-        
-        <div class="content">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('basic')">Basic Crawler</div>
-                <div class="tab" onclick="switchTab('advanced')">Advanced Crawler</div>
-                <div class="tab" onclick="switchTab('smart')">Smart Filter</div>
-                <div class="tab" onclick="switchTab('visualize')">Visualizations</div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-spider"></i>
+                    <h1>Crawler Lane</h1>
+                </div>
+                <p class="tagline">Advanced AI-Powered Web Crawler for Intelligent Text Extraction</p>
             </div>
-            
-            <!-- Basic Crawler Tab -->
-            <div id="basic" class="tab-content active">
-                <h2>🌐 Basic Web Crawler</h2>
-                <p>Extract text content from websites using simple HTTP requests.</p>
-                
-                <form id="basicForm" class="crawl-form">
-                    <div class="form-group">
-                        <label for="basicUrl">Website URL:</label>
-                        <input type="url" id="basicUrl" name="url" placeholder="https://example.com" required>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <nav class="tab-navigation">
+                <div class="tab-container">
+                    <button class="tab-btn active" data-tab="basic">
+                        <i class="fas fa-globe"></i>
+                        <span>Basic Crawler</span>
+                    </button>
+                    <button class="tab-btn" data-tab="advanced">
+                        <i class="fas fa-rocket"></i>
+                        <span>Advanced Crawler</span>
+                    </button>
+                    <button class="tab-btn" data-tab="smart">
+                        <i class="fas fa-brain"></i>
+                        <span>Smart Filter</span>
+                    </button>
+                    <button class="tab-btn" data-tab="visualize">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Visualizations</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Tab Content -->
+            <div class="tab-content-container">
+                <!-- Basic Crawler Tab -->
+                <div id="basic" class="tab-panel active">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-globe"></i> Basic Web Crawler</h2>
+                        <p>Extract text content from websites using simple HTTP requests</p>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="basicMaxPages">Max Pages:</label>
-                        <input type="number" id="basicMaxPages" name="max_pages" value="10" min="1" max="100">
+                    <form id="basicForm" class="crawl-form">
+                        <div class="form-group">
+                            <label for="basicUrl">
+                                <i class="fas fa-link"></i>
+                                Website URL
+                            </label>
+                            <input type="url" id="basicUrl" name="url" placeholder="https://example.com" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play"></i>
+                            Start Crawling
+                        </button>
+                    </form>
+                    
+                    <div id="basicResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-line"></i> Results</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="clearResult('basic')">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="basicOutput" class="result-content"></div>
+                    </div>
+                </div>
+
+                <!-- Advanced Crawler Tab -->
+                <div id="advanced" class="tab-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-rocket"></i> Advanced Web Crawler</h2>
+                        <p>Multi-page crawling with comprehensive analytics and data extraction</p>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">🚀 Start Crawling</button>
-                </form>
-                
-                <div id="basicResult" class="result-container" style="display: none;">
-                    <h3>📊 Results</h3>
-                    <div id="basicOutput"></div>
+                    <form id="advancedForm" class="crawl-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="advancedUrl">
+                                    <i class="fas fa-link"></i>
+                                    Website URL
+                                </label>
+                                <input type="url" id="advancedUrl" name="url" placeholder="https://example.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="advancedMaxPages">
+                                    <i class="fas fa-layer-group"></i>
+                                    Max Pages
+                                </label>
+                                <input type="number" id="advancedMaxPages" name="max_pages" value="5" min="1" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="advancedWaitTime">
+                                    <i class="fas fa-clock"></i>
+                                    Wait Time (seconds)
+                                </label>
+                                <input type="number" id="advancedWaitTime" name="wait_time" value="1" min="1" max="30">
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="advancedHeadless" name="headless" checked>
+                                    <span class="checkmark"></span>
+                                    <i class="fas fa-eye-slash"></i>
+                                    Run in Headless Mode (Use Requests)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Start Advanced Crawling
+                        </button>
+                    </form>
+                    
+                    <div id="advancedResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-line"></i> Advanced Crawl Results</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="clearResult('advanced')">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="advancedOutput" class="result-content"></div>
+                    </div>
+                </div>
+
+                <!-- Smart Filter Tab -->
+                <div id="smart" class="tab-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-brain"></i> Smart Content Filter</h2>
+                        <p>AI-powered content filtering and quality analysis for intelligent text extraction</p>
+                    </div>
+                    
+                    <form id="smartForm" class="crawl-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smartUrl">
+                                    <i class="fas fa-link"></i>
+                                    Website URL
+                                </label>
+                                <input type="url" id="smartUrl" name="url" placeholder="https://example.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smartMaxPages">
+                                    <i class="fas fa-layer-group"></i>
+                                    Max Pages
+                                </label>
+                                <input type="number" id="smartMaxPages" name="max_pages" value="5" min="1" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smartMinQuality">
+                                    <i class="fas fa-star"></i>
+                                    Minimum Quality Score
+                                </label>
+                                <input type="number" id="smartMinQuality" name="min_quality" value="70" min="0" max="100">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smartContentTypes">
+                                    <i class="fas fa-tags"></i>
+                                    Content Types
+                                </label>
+                                <select id="smartContentTypes" name="content_types" multiple>
+                                    <option value="article">Article</option>
+                                    <option value="blog">Blog</option>
+                                    <option value="news">News</option>
+                                    <option value="product">Product</option>
+                                    <option value="review">Review</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="smartLanguages">
+                                <i class="fas fa-language"></i>
+                                Languages
+                            </label>
+                            <select id="smartLanguages" name="languages" multiple>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-brain"></i>
+                            Start Smart Filtering
+                        </button>
+                    </form>
+                    
+                    <div id="smartResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-line"></i> Smart Filter Results</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="clearResult('smart')">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="smartOutput" class="result-content"></div>
+                    </div>
+                </div>
+
+                <!-- Visualizations Tab -->
+                <div id="visualize" class="tab-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-chart-bar"></i> Data Visualizations</h2>
+                        <p>Generate interactive charts and reports from crawl data</p>
+                    </div>
+                    
+                    <div class="visualization-options">
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <i class="fas fa-chart-pie"></i>
+                                <h4>Content Quality Distribution</h4>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-folder"></i>
+                                <h4>Content Type Analysis</h4>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-globe-americas"></i>
+                                <h4>Language Distribution</h4>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-chart-line"></i>
+                                <h4>Word Count Analysis</h4>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-smile"></i>
+                                <h4>Sentiment Analysis</h4>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-robot"></i>
+                                <h4>AI Text Extraction Metrics</h4>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="visualizationData">
+                                <i class="fas fa-upload"></i>
+                                Upload Crawl Data (JSON)
+                            </label>
+                            <textarea id="visualizationData" name="crawl_data" rows="8" placeholder='{"urls": ["https://example.com"], "pages": [{"url": "https://example.com", "title": "Example", "content": "Content here", "word_count": 100, "quality_score": 85}]}'></textarea>
+                        </div>
+                        
+                        <button onclick="generateVisualizations()" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i>
+                            Generate Visualizations
+                        </button>
+                    </div>
+                    
+                    <div id="visualizationResult" class="result-panel" style="display: none;">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-line"></i> Generated Visualizations</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="clearResult('visualize')">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="visualizationOutput" class="result-content"></div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Advanced Crawler Tab -->
-            <div id="advanced" class="tab-content">
-                <h2>🚀 Advanced Web Crawler</h2>
-                <p>Use Selenium for JavaScript-heavy websites and dynamic content.</p>
-                
-                <form id="advancedForm" class="crawl-form">
-                    <div class="form-group">
-                        <label for="advancedUrl">Website URL:</label>
-                        <input type="url" id="advancedUrl" name="url" placeholder="https://example.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="advancedMaxPages">Max Pages:</label>
-                        <input type="number" id="advancedMaxPages" name="max_pages" value="10" min="1" max="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="advancedWaitTime">Wait Time (seconds):</label>
-                        <input type="number" id="advancedWaitTime" name="wait_time" value="3" min="1" max="30">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="advancedHeadless" name="headless" checked>
-                            Run in Headless Mode
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">🚀 Start Advanced Crawling</button>
-                </form>
-                
-                <div id="advancedResult" class="result-container" style="display: none;">
-                    <h3>📊 Results</h3>
-                    <div id="advancedOutput"></div>
-                </div>
-            </div>
-            
-            <!-- Smart Filter Tab -->
-            <div id="smart" class="tab-content">
-                <h2>🧠 Smart Content Filter</h2>
-                <p>AI-powered content filtering and quality analysis for text extraction.</p>
-                
-                <form id="smartForm" class="crawl-form">
-                    <div class="form-group">
-                        <label for="smartUrl">Website URL:</label>
-                        <input type="url" id="smartUrl" name="url" placeholder="https://example.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smartMaxPages">Max Pages:</label>
-                        <input type="number" id="smartMaxPages" name="max_pages" value="10" min="1" max="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smartMinQuality">Minimum Quality Score:</label>
-                        <input type="number" id="smartMinQuality" name="min_quality" value="70" min="0" max="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smartContentTypes">Content Types:</label>
-                        <select id="smartContentTypes" name="content_types" multiple>
-                            <option value="article">Article</option>
-                            <option value="blog">Blog</option>
-                            <option value="news">News</option>
-                            <option value="product">Product</option>
-                            <option value="review">Review</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smartLanguages">Languages:</label>
-                        <select id="smartLanguages" name="languages" multiple>
-                            <option value="en">English</option>
-                            <option value="es">Spanish</option>
-                            <option value="fr">French</option>
-                            <option value="de">German</option>
-                            <option value="it">Italian</option>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">🧠 Start Smart Filtering</button>
-                </form>
-                
-                <div id="smartResult" class="result-container" style="display: none;">
-                    <h3>📊 Smart Filter Results</h3>
-                    <div id="smartOutput"></div>
-                </div>
-            </div>
-            
-            <!-- Visualizations Tab -->
-            <div id="visualize" class="tab-content">
-                <h2>📊 Data Visualizations</h2>
-                <p>Generate interactive charts and reports from crawl data.</p>
-                
-                <div class="visualization-options">
-                    <h3>📈 Available Visualizations</h3>
-                    <ul>
-                        <li>🎯 Content Quality Distribution</li>
-                        <li>📂 Content Type Analysis</li>
-                        <li>🌍 Language Distribution</li>
-                        <li>📊 Word Count Analysis</li>
-                        <li>😊 Sentiment Analysis</li>
-                        <li>📈 AI Text Extraction Metrics</li>
-                    </ul>
-                    
-                    <div class="form-group">
-                        <label for="visualizationData">Upload Crawl Data (JSON):</label>
-                        <textarea id="visualizationData" name="crawl_data" rows="10" placeholder='{"urls": ["https://example.com"], "pages": [{"url": "https://example.com", "title": "Example", "content": "Content here", "word_count": 100, "quality_score": 85}]}'></textarea>
-                    </div>
-                    
-                    <button onclick="generateVisualizations()" class="btn btn-primary">📊 Generate Visualizations</button>
-                </div>
-                
-                <div id="visualizationResult" class="result-container" style="display: none;">
-                    <h3>📊 Generated Visualizations</h3>
-                    <div id="visualizationOutput"></div>
-                </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Crawling in progress...</p>
             </div>
         </div>
     </div>
-    
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html> 

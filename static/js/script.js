@@ -1,347 +1,470 @@
-// Main JavaScript for AI Web Crawler Interface
-
 // Tab switching functionality
 function switchTab(tabName) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => content.classList.remove('active'));
+    // Hide all tab panels
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabPanels.forEach(panel => {
+        panel.classList.remove('active');
+    });
     
-    // Remove active class from all tabs
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
     
-    // Show selected tab content
-    document.getElementById(tabName).classList.add('active');
+    // Show selected tab panel
+    const selectedPanel = document.getElementById(tabName);
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+    }
     
-    // Add active class to clicked tab
-    event.target.classList.add('active');
+    // Add active class to clicked tab button
+    const clickedButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
 }
 
-// Form submission handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // Basic crawler form
-    const basicForm = document.getElementById('basicForm');
-    if (basicForm) {
-        basicForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleBasicCrawl();
-        });
+// Clear result function
+function clearResult(tabName) {
+    const resultPanel = document.getElementById(`${tabName}Result`);
+    const output = document.getElementById(`${tabName}Output`);
+    if (resultPanel && output) {
+        resultPanel.style.display = 'none';
+        output.innerHTML = '';
     }
-    
-    // Advanced crawler form
-    const advancedForm = document.getElementById('advancedForm');
-    if (advancedForm) {
-        advancedForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleAdvancedCrawl();
-        });
-    }
-    
-    // Smart filter form
-    const smartForm = document.getElementById('smartForm');
-    if (smartForm) {
-        smartForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleSmartFilter();
-        });
-    }
-});
+}
 
-// Basic crawler handler
-async function handleBasicCrawl() {
-    const form = document.getElementById('basicForm');
+// Show message function
+function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = message;
+    
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Add new message
+    const activePanel = document.querySelector('.tab-panel.active');
+    if (activePanel) {
+        activePanel.insertBefore(messageDiv, activePanel.firstChild);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 5000);
+    }
+}
+
+// Show/hide loading overlay
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+// Basic Crawler
+document.getElementById('basicForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const url = document.getElementById('basicUrl').value;
     const resultDiv = document.getElementById('basicResult');
     const outputDiv = document.getElementById('basicOutput');
     
-    // Show loading state
-    form.classList.add('loading');
-    resultDiv.style.display = 'block';
-    outputDiv.innerHTML = '<div class="message info">⏳ Crawling in progress...</div>';
+    if (!url) {
+        showMessage('Please enter a valid URL', 'error');
+        return;
+    }
+    
+    showLoading();
     
     try {
-        const formData = new FormData(form);
-        const data = {
-            url: formData.get('url'),
-            max_pages: parseInt(formData.get('max_pages'))
-        };
-        
         const response = await fetch('/crawl', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ url: url })
         });
         
         const result = await response.json();
         
         if (result.success) {
+            const totalWords = result.total_words || 0;
+            const avgQuality = result.avg_quality_score || 0;
+            
             outputDiv.innerHTML = `
-                <div class="message success">✅ Crawling completed successfully!</div>
                 <div class="crawl-results">
-                    <h4>📊 Crawl Summary</h4>
-                    <p><strong>Pages Crawled:</strong> ${result.pages.length}</p>
-                    <p><strong>Total Words:</strong> ${result.total_words}</p>
-                    <p><strong>Average Quality Score:</strong> ${result.avg_quality_score.toFixed(2)}</p>
+                    <h4><i class="fas fa-check-circle"></i> Basic Crawl Results</h4>
+                    <p><strong>URL:</strong> <a href="${result.url}" target="_blank">${result.url}</a></p>
+                    <p><strong>Title:</strong> ${result.title || 'No title'}</p>
+                    <p><strong>Word Count:</strong> ${totalWords}</p>
+                    <p><strong>Quality Score:</strong> ${avgQuality.toFixed(2)}</p>
+                    <p><strong>Status Code:</strong> ${result.status_code || 'N/A'}</p>
+                    <p><strong>Method:</strong> ${result.method || 'requests'}</p>
+                    <div class="download-section">
+                        <button onclick="downloadResults(${JSON.stringify(result).replace(/"/g, '&quot;')}, 'basic_crawl')" class="download-btn">
+                            <i class="fas fa-download"></i> Download JSON
+                        </button>
+                    </div>
                 </div>
-                <div class="crawl-details">
-                    <h4>📄 Page Details</h4>
-                    <div class="page-list">
-                        ${result.pages.map(page => `
-                            <div class="page-item">
-                                <h5>${page.title || 'No Title'}</h5>
-                                <p><strong>URL:</strong> <a href="${page.url}" target="_blank">${page.url}</a></p>
-                                <p><strong>Word Count:</strong> ${page.word_count}</p>
-                                <p><strong>Quality Score:</strong> ${page.quality_score}</p>
-                            </div>
-                        `).join('')}
+                <div class="page-item">
+                    <h5>Content Preview</h5>
+                    <p><strong>Text Content:</strong></p>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; max-height: 200px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5;">
+                        ${result.text_content ? result.text_content.substring(0, 500) + '...' : 'No content available'}
                     </div>
                 </div>
             `;
         } else {
-            outputDiv.innerHTML = `<div class="message error">❌ Error: ${result.error}</div>`;
+            outputDiv.innerHTML = `
+                <div class="message error">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${result.error || 'Unknown error occurred'}
+                </div>
+            `;
         }
+        
+        resultDiv.style.display = 'block';
+        
     } catch (error) {
-        outputDiv.innerHTML = `<div class="message error">❌ Network error: ${error.message}</div>`;
+        outputDiv.innerHTML = `
+            <div class="message error">
+                <i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}
+            </div>
+        `;
+        resultDiv.style.display = 'block';
     } finally {
-        form.classList.remove('loading');
+        hideLoading();
     }
-}
+});
 
-// Advanced crawler handler
-async function handleAdvancedCrawl() {
-    const form = document.getElementById('advancedForm');
+// Advanced Crawler
+document.getElementById('advancedForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const url = document.getElementById('advancedUrl').value;
+    const maxPages = parseInt(document.getElementById('advancedMaxPages').value) || 5;
+    const waitTime = parseInt(document.getElementById('advancedWaitTime').value) || 1;
+    const headless = document.getElementById('advancedHeadless').checked;
     const resultDiv = document.getElementById('advancedResult');
     const outputDiv = document.getElementById('advancedOutput');
     
-    // Show loading state
-    form.classList.add('loading');
-    resultDiv.style.display = 'block';
-    outputDiv.innerHTML = '<div class="message info">⏳ Advanced crawling in progress...</div>';
+    if (!url) {
+        showMessage('Please enter a valid URL', 'error');
+        return;
+    }
+    
+    showLoading();
     
     try {
-        const formData = new FormData(form);
-        const data = {
-            url: formData.get('url'),
-            max_pages: parseInt(formData.get('max_pages')),
-            wait_time: parseInt(formData.get('wait_time')),
-            headless: formData.get('headless') === 'on'
-        };
-        
         const response = await fetch('/advanced-crawl', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                url: url,
+                max_pages: maxPages,
+                wait_time: waitTime,
+                headless: headless
+            })
         });
         
         const result = await response.json();
         
         if (result.success) {
+            const pages = result.pages || [result];
+            const totalPages = pages.length;
+            const totalWords = result.total_words || 0;
+            const avgQuality = result.avg_quality_score || 0;
+            const totalLinks = pages.reduce((sum, page) => sum + (page.links || []).length, 0);
+            const totalImages = pages.reduce((sum, page) => sum + (page.images || []).length, 0);
+            
             outputDiv.innerHTML = `
-                <div class="message success">✅ Advanced crawling completed successfully!</div>
                 <div class="crawl-results">
-                    <h4>📊 Crawl Summary</h4>
-                    <p><strong>Pages Crawled:</strong> ${result.pages.length}</p>
-                    <p><strong>Total Words:</strong> ${result.total_words}</p>
-                    <p><strong>Average Quality Score:</strong> ${result.avg_quality_score.toFixed(2)}</p>
-                    <p><strong>Execution Time:</strong> ${result.execution_time}s</p>
+                    <h4><i class="fas fa-chart-line"></i> Advanced Crawl Analytics</h4>
+                    <p><strong>Pages Crawled:</strong> ${totalPages}</p>
+                    <p><strong>Total Words:</strong> ${totalWords}</p>
+                    <p><strong>Average Quality Score:</strong> ${avgQuality.toFixed(2)}</p>
+                    <p><strong>Total Links Found:</strong> ${totalLinks}</p>
+                    <p><strong>Total Images Found:</strong> ${totalImages}</p>
+                    <p><strong>Execution Time:</strong> ${result.execution_time || 'N/A'}s</p>
+                    <p><strong>Status Code:</strong> ${result.status_code || 'N/A'}</p>
+                    <div class="download-section">
+                        <button onclick="downloadResults(${JSON.stringify(result).replace(/"/g, '&quot;')}, 'advanced_crawl')" class="download-btn">
+                            <i class="fas fa-download"></i> Download JSON
+                        </button>
+                    </div>
                 </div>
                 <div class="crawl-details">
-                    <h4>📄 Page Details</h4>
-                    <div class="page-list">
-                        ${result.pages.map(page => `
-                            <div class="page-item">
-                                <h5>${page.title || 'No Title'}</h5>
-                                <p><strong>URL:</strong> <a href="${page.url}" target="_blank">${page.url}</a></p>
-                                <p><strong>Word Count:</strong> ${page.word_count}</p>
-                                <p><strong>Quality Score:</strong> ${page.quality_score}</p>
-                                <p><strong>Load Time:</strong> ${page.load_time}ms</p>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <h4><i class="fas fa-list"></i> Pages Details (${totalPages} pages)</h4>
+                    ${pages.map((page, index) => `
+                        <div class="page-item">
+                            <h5>${index + 1}. ${page.title || 'No Title'}</h5>
+                            <p><strong>URL:</strong> <a href="${page.url}" target="_blank">${page.url}</a></p>
+                            <p><strong>Word Count:</strong> ${page.word_count || page.total_words || 0}</p>
+                            <p><strong>Quality Score:</strong> ${page.quality_score || page.avg_quality_score || 0}</p>
+                            <p><strong>Description:</strong> ${page.description || 'No description'}</p>
+                            <p><strong>Links Found:</strong> ${(page.links || []).length}</p>
+                            <p><strong>Images Found:</strong> ${(page.images || []).length}</p>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         } else {
-            outputDiv.innerHTML = `<div class="message error">❌ Error: ${result.error}</div>`;
+            outputDiv.innerHTML = `
+                <div class="message error">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${result.error || 'Unknown error occurred'}
+                </div>
+            `;
         }
+        
+        resultDiv.style.display = 'block';
+        
     } catch (error) {
-        outputDiv.innerHTML = `<div class="message error">❌ Network error: ${error.message}</div>`;
+        outputDiv.innerHTML = `
+            <div class="message error">
+                <i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}
+            </div>
+        `;
+        resultDiv.style.display = 'block';
     } finally {
-        form.classList.remove('loading');
+        hideLoading();
     }
-}
+});
 
-// Smart filter handler
-async function handleSmartFilter() {
-    const form = document.getElementById('smartForm');
+// Smart Filter Crawler
+document.getElementById('smartForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const url = document.getElementById('smartUrl').value;
+    const maxPages = parseInt(document.getElementById('smartMaxPages').value) || 5;
+    const minQuality = parseInt(document.getElementById('smartMinQuality').value) || 70;
+    const contentTypes = Array.from(document.getElementById('smartContentTypes').selectedOptions).map(option => option.value);
+    const languages = Array.from(document.getElementById('smartLanguages').selectedOptions).map(option => option.value);
     const resultDiv = document.getElementById('smartResult');
     const outputDiv = document.getElementById('smartOutput');
     
-    // Show loading state
-    form.classList.add('loading');
-    resultDiv.style.display = 'block';
-    outputDiv.innerHTML = '<div class="message info">🧠 Smart filtering in progress...</div>';
+    if (!url) {
+        showMessage('Please enter a valid URL', 'error');
+        return;
+    }
+    
+    showLoading();
     
     try {
-        const formData = new FormData(form);
-        const data = {
-            url: formData.get('url'),
-            max_pages: parseInt(formData.get('max_pages')),
-            min_quality: parseInt(formData.get('min_quality')),
-            content_types: Array.from(form.querySelectorAll('select[name="content_types"] option:checked')).map(opt => opt.value),
-            languages: Array.from(form.querySelectorAll('select[name="languages"] option:checked')).map(opt => opt.value)
-        };
-        
         const response = await fetch('/smart-filter-crawl', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                url: url,
+                max_pages: maxPages,
+                min_quality: minQuality,
+                content_types: contentTypes,
+                languages: languages
+            })
         });
         
         const result = await response.json();
         
         if (result.success) {
+            const pages = result.pages || [result];
+            const totalPages = pages.length;
+            const totalWords = result.total_words || 0;
+            const avgQuality = result.avg_quality_score || 0;
+            const filteredPages = result.filtered_pages || totalPages;
+            
             outputDiv.innerHTML = `
-                <div class="message success">✅ Smart filtering completed successfully!</div>
                 <div class="crawl-results">
-                    <h4>🧠 Smart Filter Summary</h4>
-                    <p><strong>Pages Crawled:</strong> ${result.pages.length}</p>
-                    <p><strong>Pages Filtered:</strong> ${result.filtered_pages}</p>
-                    <p><strong>Total Words:</strong> ${result.total_words}</p>
-                    <p><strong>Average Quality Score:</strong> ${result.avg_quality_score.toFixed(2)}</p>
-                    <p><strong>Content Types Found:</strong> ${result.content_types.join(', ')}</p>
-                    <p><strong>Languages Detected:</strong> ${result.languages.join(', ')}</p>
+                    <h4><i class="fas fa-brain"></i> Smart Filter Results</h4>
+                    <p><strong>Total Pages Crawled:</strong> ${totalPages}</p>
+                    <p><strong>Pages After Filtering:</strong> ${filteredPages}</p>
+                    <p><strong>Total Words:</strong> ${totalWords}</p>
+                    <p><strong>Average Quality Score:</strong> ${avgQuality.toFixed(2)}</p>
+                    <p><strong>Content Types:</strong> ${result.content_types ? result.content_types.join(', ') : 'All'}</p>
+                    <p><strong>Languages:</strong> ${result.languages ? result.languages.join(', ') : 'All'}</p>
+                    <p><strong>Minimum Quality Threshold:</strong> ${minQuality}</p>
+                    <div class="download-section">
+                        <button onclick="downloadResults(${JSON.stringify(result).replace(/"/g, '&quot;')}, 'smart_filter_crawl')" class="download-btn">
+                            <i class="fas fa-download"></i> Download JSON
+                        </button>
+                    </div>
                 </div>
                 <div class="crawl-details">
-                    <h4>📄 Filtered Page Details</h4>
-                    <div class="page-list">
-                        ${result.pages.map(page => `
-                            <div class="page-item">
-                                <h5>${page.title || 'No Title'}</h5>
-                                <p><strong>URL:</strong> <a href="${page.url}" target="_blank">${page.url}</a></p>
-                                <p><strong>Content Type:</strong> ${page.content_type}</p>
-                                <p><strong>Language:</strong> ${page.language}</p>
-                                <p><strong>Quality Score:</strong> ${page.quality_score}</p>
-                                <p><strong>Sentiment:</strong> ${page.sentiment}</p>
-                                <p><strong>Word Count:</strong> ${page.word_count}</p>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <h4><i class="fas fa-filter"></i> Filtered Pages (${filteredPages} pages)</h4>
+                    ${pages.map((page, index) => `
+                        <div class="page-item">
+                            <h5>${index + 1}. ${page.title || 'No Title'}</h5>
+                            <p><strong>URL:</strong> <a href="${page.url}" target="_blank">${page.url}</a></p>
+                            <p><strong>Word Count:</strong> ${page.word_count || page.total_words || 0}</p>
+                            <p><strong>Quality Score:</strong> ${page.quality_score || page.avg_quality_score || 0}</p>
+                            <p><strong>Content Type:</strong> ${page.content_type || 'Unknown'}</p>
+                            <p><strong>Language:</strong> ${page.language || 'Unknown'}</p>
+                        </div>
+                    `).join('')}
                 </div>
             `;
         } else {
-            outputDiv.innerHTML = `<div class="message error">❌ Error: ${result.error}</div>`;
+            outputDiv.innerHTML = `
+                <div class="message error">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${result.error || 'Unknown error occurred'}
+                </div>
+            `;
         }
+        
+        resultDiv.style.display = 'block';
+        
     } catch (error) {
-        outputDiv.innerHTML = `<div class="message error">❌ Network error: ${error.message}</div>`;
+        outputDiv.innerHTML = `
+            <div class="message error">
+                <i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}
+            </div>
+        `;
+        resultDiv.style.display = 'block';
     } finally {
-        form.classList.remove('loading');
+        hideLoading();
     }
-}
+});
 
-// Visualization generator
+// Visualizations
 async function generateVisualizations() {
-    const dataTextarea = document.getElementById('visualizationData');
+    const data = document.getElementById('visualizationData').value;
     const resultDiv = document.getElementById('visualizationResult');
     const outputDiv = document.getElementById('visualizationOutput');
     
-    if (!dataTextarea.value.trim()) {
-        alert('Please enter crawl data in JSON format');
+    if (!data) {
+        showMessage('Please enter crawl data for visualization', 'error');
         return;
     }
     
+    showLoading();
+    
     try {
-        const crawlData = JSON.parse(dataTextarea.value);
-        
-        // Show loading state
-        resultDiv.style.display = 'block';
-        outputDiv.innerHTML = '<div class="message info">📊 Generating visualizations...</div>';
-        
         const response = await fetch('/visualize', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ crawl_data: crawlData })
+            body: JSON.stringify({
+                crawl_data: JSON.parse(data)
+            })
         });
         
         const result = await response.json();
         
         if (result.success) {
             outputDiv.innerHTML = `
-                <div class="message success">✅ Visualizations generated successfully!</div>
-                <div class="visualization-files">
-                    <h4>📁 Generated Files</h4>
-                    <ul>
-                        ${Object.entries(result.visualizations).map(([key, filename]) => `
-                            <li><strong>${key}:</strong> <a href="/examples/${filename}" target="_blank">${filename}</a></li>
-                        `).join('')}
-                    </ul>
-                </div>
-                <div class="visualization-preview">
-                    <h4>📊 Preview</h4>
-                    <p>Click on the links above to view the generated visualizations in your browser.</p>
+                <div class="crawl-results">
+                    <h4><i class="fas fa-chart-bar"></i> Generated Visualizations</h4>
+                    <p><strong>Visualizations Created:</strong> ${result.visualizations ? result.visualizations.length : 0}</p>
+                    <p><strong>Message:</strong> ${result.message}</p>
+                    <div class="download-section">
+                        <button onclick="window.open('/dashboard', '_blank')" class="download-btn">
+                            <i class="fas fa-external-link-alt"></i> View Dashboard
+                        </button>
+                    </div>
                 </div>
             `;
         } else {
-            outputDiv.innerHTML = `<div class="message error">❌ Error: ${result.error}</div>`;
+            outputDiv.innerHTML = `
+                <div class="message error">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${result.error || 'Unknown error occurred'}
+                </div>
+            `;
+        }
+        
+        resultDiv.style.display = 'block';
+        
+    } catch (error) {
+        outputDiv.innerHTML = `
+            <div class="message error">
+                <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+            </div>
+        `;
+        resultDiv.style.display = 'block';
+    } finally {
+        hideLoading();
+    }
+}
+
+// Download results as JSON file
+async function downloadResults(crawlData, crawlType) {
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `${crawlType}_${timestamp}.json`;
+        
+        const response = await fetch('/download-json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                crawl_data: crawlData,
+                filename: filename
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Create a download link for the file
+            const blob = new Blob([JSON.stringify(crawlData, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showMessage(`✅ ${result.message}`, 'success');
+        } else {
+            showMessage(`❌ Download failed: ${result.error}`, 'error');
         }
     } catch (error) {
-        if (error instanceof SyntaxError) {
-            outputDiv.innerHTML = `<div class="message error">❌ Invalid JSON format. Please check your data.</div>`;
-        } else {
-            outputDiv.innerHTML = `<div class="message error">❌ Network error: ${error.message}</div>`;
-        }
+        showMessage(`❌ Download error: ${error.message}`, 'error');
     }
 }
 
-// Utility functions
-function showMessage(message, type = 'info') {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = message;
-    document.body.appendChild(messageDiv);
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up tab button event listeners
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            switchTab(tabName);
+        });
+    });
     
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 5000);
-}
-
-// Add some sample data for testing
-function loadSampleData() {
-    const sampleData = {
-        "urls": ["https://example.com"],
-        "pages": [
-            {
-                "url": "https://example.com/article1",
-                "title": "Sample Article 1",
-                "content": "This is a sample article about AI and machine learning.",
-                "word_count": 150,
-                "quality_score": 85,
-                "content_type": "Article",
-                "language": "en",
-                "sentiment": "positive"
-            },
-            {
-                "url": "https://example.com/article2",
-                "title": "Sample Article 2",
-                "content": "Another sample article about web crawling and data extraction.",
-                "word_count": 200,
-                "quality_score": 78,
-                "content_type": "Article",
-                "language": "en",
-                "sentiment": "neutral"
-            }
-        ]
-    };
-    
-    const textarea = document.getElementById('visualizationData');
-    if (textarea) {
-        textarea.value = JSON.stringify(sampleData, null, 2);
-        showMessage('Sample data loaded!', 'success');
+    // Add some sample data to visualization textarea
+    const visualizationData = document.getElementById('visualizationData');
+    if (visualizationData && !visualizationData.value) {
+        visualizationData.value = JSON.stringify({
+            urls: ["https://example.com"],
+            pages: [{
+                url: "https://example.com",
+                title: "Example Page",
+                content: "This is sample content for visualization testing.",
+                word_count: 100,
+                quality_score: 85
+            }]
+        }, null, 2);
     }
-} 
+    
+    console.log('Crawler Lane initialized successfully!');
+}); 
